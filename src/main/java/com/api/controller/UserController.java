@@ -5,15 +5,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.api.entities.User;
 import com.api.exceptions.CustomNotFoundException;
 import com.api.services.UserService;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
@@ -24,51 +27,54 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // ✅ Get all users
+    // Get all users
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> allUsers = userService.getAllUsers();
-        return new ResponseEntity<>(allUsers, HttpStatus.OK);
+        return ResponseEntity.ok(allUsers);
     }
 
-    // ✅ Get user by ID
-    @GetMapping("/{userId}")
-    public ResponseEntity<User> getById(@PathVariable Integer userId) {
-        User user = userService.getById(userId);
+    // Get user by FID (Firebase ID)
+    @GetMapping("/{fid}")
+    public ResponseEntity<User> getByFid(@PathVariable String fid) {
+        User user = userService.getById(fid);
         if (user == null) {
-            throw new CustomNotFoundException("User not found with ID: " + userId);
+            throw new CustomNotFoundException("User not found with FID: " + fid);
         }
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return ResponseEntity.ok(user);
     }
 
-    // ✅ Add new user with validation
+    // Add new user with validation
     @PostMapping
-  
     public ResponseEntity<User> addUser(@Validated @RequestBody User user) {
         User savedUser = userService.addUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    // ✅ Update existing user with validation
-    @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer userId, @Validated @RequestBody User user) {
-        User updatedUser = userService.updateUser(userId, user);
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    // Update existing user by FID with validation
+    @PutMapping("/{fid}")
+    public ResponseEntity<User> updateUser(@PathVariable String fid, @Validated @RequestBody User user) {
+        User updatedUser = userService.updateUser(fid, user);
+        if (updatedUser == null) {
+            throw new CustomNotFoundException("User not found with FID: " + fid);
+        }
+        return ResponseEntity.ok(updatedUser);
     }
 
-    // ✅ Delete user by ID
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteById(@PathVariable Integer userId) {
-        String status = userService.deleteById(userId);
-        if (status == null) {
-            throw new CustomNotFoundException("User not found with ID: " + userId);
+    // Delete user by FID
+    @DeleteMapping("/{fid}")
+    public ResponseEntity<String> deleteByFid(@PathVariable String fid) {
+        boolean deleted = userService.deleteById(fid);
+        if (!deleted) {
+            throw new CustomNotFoundException("User not found with FID: " + fid);
         }
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        return ResponseEntity.ok("User deleted successfully");
     }
-    
+
+    // Download user image
     @GetMapping("/image/{imageName}")
     public void downloadImage(@PathVariable String imageName, HttpServletResponse response) throws IOException {
-        Path path = Paths.get("uploads/" + imageName);
+        Path path = Paths.get("uploads", imageName);
         if (Files.exists(path)) {
             response.setContentType(Files.probeContentType(path));
             Files.copy(path, response.getOutputStream());
@@ -78,16 +84,13 @@ public class UserController {
         }
     }
 
-    @PostMapping("/{userId}/upload-image")
+    // Upload user image by FID
+    @PostMapping("/{fid}/upload-image")
     public ResponseEntity<String> uploadUserImage(
-            @PathVariable Integer userId,
+            @PathVariable String fid,
             @RequestParam("image") MultipartFile imageFile) throws IOException {
 
-    	userService.uploadUserImage(userId, imageFile);
-
-        return ResponseEntity.ok("Image uploaded and user updated successfully for user ID: " + userId);
+        userService.uploadUserImage(fid, imageFile);
+        return ResponseEntity.ok("Image uploaded and user updated successfully for FID: " + fid);
     }
-
-
-    
 }

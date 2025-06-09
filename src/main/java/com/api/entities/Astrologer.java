@@ -2,6 +2,8 @@ package com.api.entities;
 
 
 
+import java.io.Serializable;
+
 import com.api.enums.Status;
 
 //import org.hibernate.annotations.processing.Pattern;
@@ -24,7 +26,7 @@ import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "Astrologers") 
-public class Astrologer {
+public class Astrologer implements Serializable{
 
 	
 
@@ -48,8 +50,7 @@ public class Astrologer {
 		)
     private String password;
     
-    @Pattern(regexp = "^\\d+\\s*years$", message = "Experience must be a valid followed by 'years'")
-  //  @NotBlank(message = "Experience is required")
+    @NotBlank(message = "Experience is required")
     @Column(name = "experience")
     private String experience;
 
@@ -83,7 +84,7 @@ public class Astrologer {
 //    @Min(value = 0, message = "Rating must be at least 0")
 //    @Max(value = 5, message = "Rating must be at most 5")
 //    @Column(name = "rating")
-    private Long rating;
+    private Double rating;
 
 //    @Pattern(regexp = "^\\d+\\s*orders$", message = "Orders must be a valid number followed by 'orders'")
 //    @NotBlank(message = "Orders field is required")
@@ -186,11 +187,11 @@ public class Astrologer {
 		this.price = price;
 	}
 
-	public Long getRating() {
+	public Double getRating() {
 		return rating;
 	}
 
-	public void setRating(Long rating) {
+	public void setRating(Double rating) {
 		this.rating = rating;
 	}
 
@@ -240,7 +241,7 @@ public class Astrologer {
 			@Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be exactly 10 digits and contain only numbers") String contactNumber,
 			String about, String photourl,
 			@Min(value = 0, message = "Price must be at least 0") @NotNull(message = "Price is required") Long price,
-			Long rating, String orders, Status status, boolean isVerified) {
+			Double rating, String orders, Status status, boolean isVerified) {
 		super();
 		this.id = id;
 		this.name = name;

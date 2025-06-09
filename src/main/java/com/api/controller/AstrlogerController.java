@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.api.entities.ApiResponse;
 import com.api.entities.Astrologer;
 import com.api.exceptions.CustomNotFoundException;
 import com.api.services.AstrologerService;
@@ -66,10 +67,11 @@ public class AstrlogerController {
 	//InsertData
 	
 	@PostMapping
-	public ResponseEntity<Astrologer> addAstrologer(@Validated @RequestBody Astrologer astrologer){
+	public ResponseEntity<Astrologer> addAstrologer(@Validated @RequestBody Astrologer astrologer) {
+		Astrologer created = astrologerService.addAstrologer(astrologer);
+	    return new ResponseEntity<>(created, HttpStatus.CREATED);
 		
-		Astrologer status = astrologerService.addAstrologer(astrologer);
-		return new ResponseEntity<>(status,HttpStatus.CREATED);
+		
 	}
 	
 	//updateData
